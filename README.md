@@ -14,3 +14,9 @@ Julianny Favinha Donda (156059)
 Kaique de Souza Monteiro (156074)
 
 Tamara Martinelli de Campos (157324)
+
+________________________________________________________________________________
+
+Before run any code, download the dataset in 
+
+https://www.kaggle.com/footprintnetwork/national-footprint-accounts-2018/version/8
