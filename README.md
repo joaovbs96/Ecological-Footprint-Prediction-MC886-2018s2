@@ -19,4 +19,10 @@ ________________________________________________________________________________
 
 Before run any code, download the dataset in 
 
+https://drive.google.com/open?id=1rKY-SpgsOymv_2suTM7z_TVBr2iaRr2F
+
+________________________________________________________________________________
+
+Original dataset "National Footprint Accounts 2018" in Kaggle
+
 https://www.kaggle.com/footprintnetwork/national-footprint-accounts-2018/version/8
