@@ -1,5 +1,6 @@
 # data folders
 NFA 2018.csv
+NFA2018Shuffled.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
