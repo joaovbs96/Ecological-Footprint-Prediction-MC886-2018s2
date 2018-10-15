@@ -8,9 +8,9 @@ def shuffle():
 
 
 """
-Train -> 5852 rows
-Validation -> 730 rows
-Test -> 730 rows
+Train -> 60914 rows
+Validation -> 13053 rows
+Test -> 13053 rows
 """
 
 
