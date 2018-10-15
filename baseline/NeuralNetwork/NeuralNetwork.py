@@ -12,21 +12,6 @@ from sklearn.preprocessing import MinMaxScaler
 from ParseData import get_train_set, get_test_set
 
 # # Import data
-# data = pd.read_csv('NewNFA-Filtered.csv')
-# data = data.drop('country', 1)
-# data = data.drop('UN_subregion', 1)
-# cols = data.columns.tolist()
-
-# # Dimensions of dataset
-# n, m = data.shape
-
-# # Separate datasets into training, validation and testing
-# Y = data['carbon'].values
-# X = data.drop(['carbon'], 1).values
-
-# x_train, y_train = X[:-1460], Y[:-1460]
-# x_valid, y_valid = X[-1460:-730:], Y[-1460:-730:]
-# x_test, y_test = X[-730:], Y[-730:]
 x_train, y_train, x_valid, y_valid = get_train_set()
 x_test, y_test = get_test_set()
 
