@@ -1,10 +1,10 @@
 # Import
 import sys
-import tensorflow as tf
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
+import tensorflow as tf
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
 
 # Import data
 data = pd.read_csv('NewNFA.csv')
@@ -34,4 +34,4 @@ data = data.dropna()
 data = data.sample(frac=1)
 
 # save to file
-data.to_csv("NewNFA-Filtered1.csv", index=False)
+data.to_csv("NewNFA-Filtered.csv", index=False)
