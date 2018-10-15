@@ -7,6 +7,7 @@ from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 from random import randint
 from sklearn.metrics import r2_score
+from pylab import savefig
 
 # Import data
 data = pd.read_csv('NewNFA-Filtered.csv')
@@ -87,9 +88,10 @@ net.run(tf.global_variables_initializer())
 plt.ion()
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-line1, = ax1.plot(y_valid)
-line2, = ax1.plot(y_valid * 0.5)
-line3, = ax1.plot(y_valid * 0.25)
+line1, = ax1.plot(y_valid, color='b', label='Y Validation')
+line2, = ax1.plot(y_valid * 0.5, color='r', label='Prediction', alpha=0.3)
+#line3, = ax1.plot(y_valid * 0.25)
+plt.legend()
 plt.show()
 
 # Fit neural net
@@ -137,7 +139,11 @@ for e in range(epochs):
             plt.title('Epoch ' + str(e) + ', Batch ' + str(i))
             plt.pause(0.01)
 
-plt.clear()
+plt.cla()
+plt.clf()
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
 plt.plot(mse_valid)
 plt.title('Error vs iteration')
-plt.show()
+savefig('foo.png', bbox_inches='tight')
