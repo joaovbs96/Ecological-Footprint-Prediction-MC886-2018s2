@@ -1,4 +1,5 @@
 # Import
+import ParseData
 import sys
 import numpy as np
 import pandas as pd
@@ -41,21 +42,9 @@ def calcR2(x, y_true, theta):
 
 ## MAIN
 
-
-# Import data
-data = pd.read_csv('NewNFA-Filtered.csv')
-data = data.drop('country', 1)
-data = data.drop('UN_subregion', 1)
-cols = data.columns.tolist()
-
-# Separate datasets into training, validation and testing
-Y = data['carbon'].values
-X = data.drop(['carbon'], 1).values
-
-x_train, y_train = X[:-1460], Y[:-1460]
-x_valid, y_valid = X[-1460:-730:], Y[-1460:-730:]
-x_test, y_test = X[-730:], Y[-730:]
-
+# Get data set
+x_train, y_train, x_valid, y_valid = ParseData.get_train_set()
+x_test, y_test = ParseData.get_test_set()
 
 # Scale data
 # scaler = MinMaxScaler(feature_range=(0, 1))
@@ -81,7 +70,7 @@ print('GD batch with regularization:')
 J, thetas = gradientDescentReg(x_train, y_train, alpha, n, m, it, r)
 print('Train: ' + str(calcR2(x_train, y_train, thetas)))
 print('Validation: ' + str(calcR2(x_valid, y_valid, thetas)))
-print('Test: ' + str(calcR2(x_test, y_test, thetas)))
+#print('Test: ' + str(calcR2(x_test, y_test, thetas)))
 print()
 
 # plot graph for GD with regularization
@@ -99,6 +88,6 @@ thetasNE = normalEquationReg(x_train, y_train, r)
 print('Train: ' + str(calcR2(x_train, y_train, thetasNE)))
 thetasNE = normalEquationReg(x_valid, y_valid, r)
 print('Validation: ' + str(calcR2(x_valid, y_valid, thetasNE)))
-thetasNE = normalEquationReg(x_test, y_test, r)
-print('Test: ' + str(calcR2(x_test, y_test, thetasNE)))
+#thetasNE = normalEquationReg(x_test, y_test, r)
+#print('Test: ' + str(calcR2(x_test, y_test, thetasNE)))
 print()
