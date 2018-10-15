@@ -1,13 +1,14 @@
 # Import
 import sys
-import tensorflow as tf
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
-import matplotlib.pyplot as plt
-from random import randint
-from sklearn.metrics import r2_score
+import tensorflow as tf
+
 from pylab import savefig
+from random import randint
+import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score
+from sklearn.preprocessing import MinMaxScaler
 
 # Import data
 data = pd.read_csv('NewNFA-Filtered.csv')
@@ -101,7 +102,7 @@ mse_valid = []
 # mse_test = []
 
 # Run
-epochs = 5000
+epochs = 200
 for e in range(epochs):
 
     # Minibatch training
@@ -145,5 +146,7 @@ plt.clf()
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 plt.plot(mse_valid)
-plt.title('Error vs iteration')
-savefig('foo.png', bbox_inches='tight')
+plt.title('Error vs number of iterations')
+plt.xlabel('Number of iterations')
+plt.ylabel('Error')
+savefig('ErrorVsIteration.png', bbox_inches='tight')
