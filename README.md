@@ -20,7 +20,11 @@ ________________________________________________________________________________
 The dataset used here has been reorganized when compared to its original version. 
 New features were added and observations were removed to better adapt the project needs.
 
+Ordered dataset:
 https://drive.google.com/file/d/1JPrsYrrjg2Ni9nm6pgEr4XsJh4w_b-j3/view?usp=sharing
+
+Filtered dataset, with some features removed and altered(use this):
+https://drive.google.com/file/d/1IZ6PmkPdDEOa3_wSumpHr2oKiFWQab0R/view?usp=sharing
 
 ________________________________________________________________________________
 
