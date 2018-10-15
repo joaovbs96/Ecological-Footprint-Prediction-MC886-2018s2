@@ -1,9 +1,8 @@
 # Import
-# import tensorflow as tf
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
 
 # Import data
 data = pd.read_csv('NFA 2018.csv')
