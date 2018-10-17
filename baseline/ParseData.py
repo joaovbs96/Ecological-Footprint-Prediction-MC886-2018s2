@@ -32,9 +32,9 @@ def get_set():
 	x_valid, y_valid = X[-1460:-730:], Y[-1460:-730:]
 	x_test, y_test = X[-730:], Y[-730:]
 
-	print(x_train.shape)
-	print(x_valid.shape)
-	print(x_test.shape)
+	# print(x_train.shape)
+	# print(x_valid.shape)
+	# print(x_test.shape)
 
 	return x_train, y_train, x_valid, y_valid, x_test, y_test
 
