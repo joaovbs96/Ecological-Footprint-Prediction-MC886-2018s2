@@ -82,7 +82,7 @@ plt.plot(J, 'blue')
 plt.ylabel('Cost')
 plt.xlabel('Number of iterations')
 plt.title('Gradient Descent for learning rate 0.1 and regularization 10')
-plt.savefig('GDModel.png')
+plt.savefig('GDModel.png', bbox_inches='tight')
 plt.gcf().clear()
 
 # execute normal equation
