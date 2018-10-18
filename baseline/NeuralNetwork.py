@@ -65,10 +65,26 @@ H2 = tf.nn.relu(tf.add(tf.matmul(H2, W4), B4))
 out = tf.transpose(tf.add(tf.matmul(H2, W_out), bias_out))
 
 # Cost function
-mse = tf.reduce_mean(tf.squared_difference(out, Y))
+loss = tf.reduce_mean(tf.squared_difference(out, Y))
+
+# Loss function using L2 Regularization
+regularizer = tf.nn.l2_loss(W1)
+regularizer += tf.nn.l2_loss(W2)
+regularizer += tf.nn.l2_loss(W3)
+regularizer += tf.nn.l2_loss(W4)
+regularizer += tf.nn.l2_loss(W_out)
+
+regularizer = tf.nn.l2_loss(B1)
+regularizer += tf.nn.l2_loss(B2)
+regularizer += tf.nn.l2_loss(B3)
+regularizer += tf.nn.l2_loss(B4)
+regularizer += tf.nn.l2_loss(bias_out)
+
+beta = 10
+loss_reg = tf.reduce_mean(loss + beta * regularizer)
 
 # Optimizer
-opt = tf.train.AdamOptimizer().minimize(mse)
+opt = tf.train.AdamOptimizer(learning_rate=0.01).minimize(loss_reg)
 
 # Init
 net.run(tf.global_variables_initializer())
@@ -90,7 +106,7 @@ mse_valid = []
 # mse_test = []
 
 # Run
-epochs = 200
+epochs = 500
 for e in range(epochs):
 
     # Minibatch training
@@ -105,8 +121,8 @@ for e in range(epochs):
         # Show progress
         if np.mod(i, 50) == 0:
             # MSE train and test
-            mse_train.append(net.run(mse, feed_dict={X: x_train, Y: y_train}))
-            mse_valid.append(net.run(mse, feed_dict={X: x_valid, Y: y_valid}))
+            mse_train.append(net.run(loss_reg, feed_dict={X: x_train, Y: y_train}))
+            mse_valid.append(net.run(loss_reg, feed_dict={X: x_valid, Y: y_valid}))
             #mse_test.append(net.run(mse, feed_dict={X: x_test, Y: y_test}))
 
             print('MSE Validation: ', mse_valid[-1])
