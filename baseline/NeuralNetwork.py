@@ -106,7 +106,7 @@ mse_valid = []
 # mse_test = []
 
 # Run
-epochs = 500
+epochs = 200
 for e in range(epochs):
 
     # Minibatch training
