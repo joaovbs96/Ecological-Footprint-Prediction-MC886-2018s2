@@ -13,15 +13,16 @@ from sklearn.preprocessing import MinMaxScaler
 # Import data
 data = pd.read_csv('NewNFA-Filtered.csv')
 
-# drop unneeded features
-# note that hot-encoded features are named differently
+# Shuffle the dataset, before anything else.
+data = data.sample(frac=1)
+
+# Drop non-numerical versions of hot-encoded features.
 data = data.drop('country', 1)
 data = data.drop('UN_subregion', 1)
-
-# Separate datasets into training and testing
 Y = data['carbon'].values
 X = data.drop(['carbon'], 1).values
 
+# Separate datasets into training and testing
 x_train, y_train = X[:-730], Y[:-730]
 x_test, y_test = X[-730:], Y[-730:]
 
@@ -33,28 +34,32 @@ x_test = scaler.transform(x_test)
 
 X_data, Y_data = x_train, y_train
 
+# accuracy and MSE accumulators
+r2_train, mse_avg_train = 0.0, 0.0
+r2_valid, mse_avg_valid = 0.0, 0.0
+r2_test, mse_avg_test = 0.0, 0.0
+
+# Plot initialization
+plt.ion()
+
 # K-fold cross validation
-r2_avg, mse_avg = 0.0, 0.0 # accuracy accumulator
-r2_test, mse_test = 0.0, 0.0
 k = 5 # number of folds
 kf = KFold(n_splits=k)
-i = 0
+ki = 0
 for ind_train, ind_valid in kf.split(x_train):
-    i += 1
+    ki += 1
 
-    # TODO: outra maneira de fazer isso sem percorrer tudo?
-    x_train, y_train = [], []
-    for i in ind_train:
-        x_train.append(X_data[i])
-        y_train.append(Y_data[i])
-    x_train, y_train = np.array(x_train), np.array(y_train)
-    
-    x_valid, y_valid = [], []
-    for i in ind_valid:
-        x_valid.append(X_data[i])
-        y_valid.append(Y_data[i])
-    x_valid, y_valid = np.array(x_train), np.array(y_train)
+    # get train and validation sets
+    x_train, y_train = X_data[ind_train], Y_data[ind_train]
+    x_valid, y_valid = X_data[ind_valid], Y_data[ind_valid]
 
+    # Setup plot of the current fold
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    line1, = ax1.plot(y_valid, color='b', label='Y Validation')
+    line2, = ax1.plot(y_valid * 0.5, color='r', label='Prediction', alpha=0.3)
+    plt.legend()
+    plt.show()
 
     # Number of observations in training data
     n0 = x_train.shape[1]
@@ -113,7 +118,7 @@ for ind_train, ind_valid in kf.split(x_train):
     regularizer += tf.nn.l2_loss(B4)
     regularizer += tf.nn.l2_loss(bias_out)
 
-    beta = 0.1 # TODO: test other values
+    beta = 0.1
     loss_reg = tf.reduce_mean(loss + beta * regularizer)
 
     # Optimizer
@@ -121,26 +126,11 @@ for ind_train, ind_valid in kf.split(x_train):
 
     # Init
     net.run(tf.global_variables_initializer())
-
-    # Setup plot
-    """plt.ion()
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    line1, = ax1.plot(y_valid, color='b', label='Y Validation')
-    line2, = ax1.plot(y_valid * 0.5, color='r', label='Prediction', alpha=0.3)
-    #line3, = ax1.plot(y_valid * 0.25)
-    plt.legend()
-    plt.show()"""
-
-    # Fit neural net
-    batch_size = 256
-    mse_train = []
-    mse_valid = []
-    # mse_test = []
-
+    
     # Run
     epochs = 50
-    r2_epoch, mse_epoch = 0, 0
+    batch_size = 100
+    mse_train, mse_valid = [], []
     for e in range(epochs):
         print(e)
 
@@ -155,45 +145,55 @@ for ind_train, ind_valid in kf.split(x_train):
 
             # Show progress
             if np.mod(i, 50) == 0:
-                # MSE train and test
+                # Observation & Prediction plot
+                pred_valid = net.run(out, feed_dict={X: x_valid})
+                line2.set_ydata(pred_valid)
+                plt.title('Epoch ' + str(e) + ', Batch ' + str(i) + ', Fold ' + str(ki))
+                plt.pause(0.01)
+
+                # Used in Error vs Iteration plot
                 mse_train.append(net.run(loss_reg, feed_dict={X: x_train, Y: y_train}))
                 mse_valid.append(net.run(loss_reg, feed_dict={X: x_valid, Y: y_valid}))
-                #mse_test.append(net.run(mse, feed_dict={X: x_test, Y: y_test}))
 
-                #print('MSE Validation: ', mse_valid[-1])
-                #print('MSE Test: ', mse_test[-1])
-                mse_epoch = mse_valid[-1]
+    # Evaluate model once per fold
+    # Train Set
+    mse_avg_train += mse_train[-1]
+    pred_train = net.run(out, feed_dict={X: x_train})
+    r2_train += r2_score(y_train, pred_train[0])
 
-                # Prediction
-                pred = net.run(out, feed_dict={X: x_valid})
-                #pred_test = net.run(out, feed_dict={X: x_test})
+    # Validation Set
+    mse_avg_valid += mse_valid[-1]
+    pred_valid = net.run(out, feed_dict={X: x_valid})
+    r2_valid += r2_score(y_valid, pred_valid[0])
+    
+    # Test Set
+    mse_avg_test = net.run(loss_reg, feed_dict={X: x_test, Y: y_test})
+    pred_test = net.run(out, feed_dict={X: x_test})
+    r2_test += r2_score(y_test, pred_test[0])
 
-                #print('R2 Score: ', r2_score(y_valid, pred[0]))
-                r2_epoch = r2_score(y_valid, pred[0])
+    # close interactive session
+    net.close()
 
-                ind = randint(0, len(y_valid)-1)
-                #print('i', i, ': ', 100*pred[0][i]/y_valid[i], '%')
-                #print('i', ind, ': ', 100*pred[0][ind]/y_valid[ind], '%')
-
-                """line2.set_ydata(pred)
-                #line3.set_ydata(pred_test)"""
-
-                """plt.title('Epoch ' + str(e) + ', Batch ' + str(i))
-                plt.pause(0.01)"""
-
-    r2_avg += r2_epoch
-    mse_avg += mse_epoch
-
-    """plt.cla()
+    plt.cla()
     plt.clf()
 
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    plt.plot(mse_valid)
+    # TODO: não consigo fazer plotar, dá erro.
+    """plt.figure()
+    plt.plot(mse_train)
     plt.title('Error vs number of iterations')
     plt.xlabel('Number of iterations')
     plt.ylabel('Error')
-    savefig('ErrorVsIteration' + str(i) + '.png', bbox_inches='tight')"""
+    plt.show()
+    savefig('ErrorVsIteration' + str(ki) + '.png', bbox_inches='tight')
+    plt.cla()
+    plt.clf()"""
+    plt.close()
 
-print('MSE Cross-Validation: ', mse_avg / k)
-print('R2 Score Cross-Validation: ', r2_avg / k)
+# Print results
+print('MSE Train: ', mse_avg_train / k)
+print('MSE Validation: ', mse_avg_valid / k)
+print('MSE Test: ', mse_avg_test / k)
+print()
+print('R2 Score Train: ', r2_train / k)
+print('R2 Score Validation: ', r2_valid / k)
+print('R2 Score Test: ', r2_test / k)
