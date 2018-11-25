@@ -1,16 +1,15 @@
-# Import
+# Imports
 import sys
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 from pylab import savefig
-from random import randint
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import MinMaxScaler
 
-# Import data
+# Read data
 data = pd.read_csv('NewNFA-Filtered.csv')
 
 # Shuffle the dataset, before anything else.
@@ -19,6 +18,8 @@ data = data.sample(frac=1)
 # Drop non-numerical versions of hot-encoded features.
 data = data.drop('country', 1)
 data = data.drop('UN_subregion', 1)
+
+# Separate target from other features.
 Y = data['carbon'].values
 X = data.drop(['carbon'], 1).values
 
@@ -93,14 +94,14 @@ for ind_train, ind_valid in kf.split(x_train):
     W_out = tf.Variable(weights([n4, 1]))
     bias_out = tf.Variable(biases([1]))
 
-    # Hidden layer
+    # Hidden layers
     H1 = tf.nn.relu(tf.add(tf.matmul(X, W1), B1))
     H2 = tf.nn.relu(tf.add(tf.matmul(H1, W2), B2))
-    H2 = tf.nn.relu(tf.add(tf.matmul(H2, W3), B3))
-    H2 = tf.nn.relu(tf.add(tf.matmul(H2, W4), B4))
+    H3 = tf.nn.relu(tf.add(tf.matmul(H2, W3), B3))
+    H4 = tf.nn.relu(tf.add(tf.matmul(H3, W4), B4))
 
     # Output layer (transpose!)
-    out = tf.transpose(tf.add(tf.matmul(H2, W_out), bias_out))
+    out = tf.transpose(tf.add(tf.matmul(H4, W_out), bias_out))
 
     # Cost function
     loss = tf.reduce_mean(tf.squared_difference(out, Y))
@@ -112,7 +113,7 @@ for ind_train, ind_valid in kf.split(x_train):
     regularizer += tf.nn.l2_loss(W4)
     regularizer += tf.nn.l2_loss(W_out)
 
-    regularizer = tf.nn.l2_loss(B1)
+    regularizer += tf.nn.l2_loss(B1)
     regularizer += tf.nn.l2_loss(B2)
     regularizer += tf.nn.l2_loss(B3)
     regularizer += tf.nn.l2_loss(B4)
