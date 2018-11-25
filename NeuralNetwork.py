@@ -41,18 +41,20 @@ r2_train, mse_avg_train = 0.0, 0.0
 r2_valid, mse_avg_valid = 0.0, 0.0
 r2_test, mse_avg_test = 0.0, 0.0
 
+# Plot initialization
+plt.ion()
+
+# Execution parameters
+k = 5 # number of folds
 epochs = 50
 batch_size = 100
 
-# Plot initialization
-plt.ion()
-# defines how frequently we update the plots.
-# Lower freq updates more frequently, but it's slower.
-freq = 20
-it_Num = int((epochs / freq) + 1) * epochs
+# batches_per_plot defines how frequently we update the plots.
+# A lower number updates more frequently, but it's slower.
+batches_per_plot = 20
+it_Num = int((epochs / batches_per_plot) + 1) * epochs
 
 # K-fold cross validation
-k = 5 # number of folds
 kf = KFold(n_splits=k)
 ki = 0
 for ind_train, ind_valid in kf.split(x_train):    
@@ -160,7 +162,7 @@ for ind_train, ind_valid in kf.split(x_train):
             net.run(opt, feed_dict={X: batch_x, Y: batch_y})
 
             # Show progress
-            if np.mod(i, freq) == 0:
+            if np.mod(i, batches_per_plot) == 0:
                 # Observation & Prediction plot
                 pred_valid = net.run(out, feed_dict={X: x_valid})
                 line2.set_ydata(pred_valid)
