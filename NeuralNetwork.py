@@ -1,5 +1,6 @@
 # Imports
 import sys
+import time
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -40,26 +41,44 @@ r2_train, mse_avg_train = 0.0, 0.0
 r2_valid, mse_avg_valid = 0.0, 0.0
 r2_test, mse_avg_test = 0.0, 0.0
 
+epochs = 50
+batch_size = 100
+
 # Plot initialization
 plt.ion()
+# defines how frequently we update the plots.
+# Lower freq updates more frequently, but it's slower.
+freq = 20
+it_Num = int((epochs / freq) + 1) * epochs
 
 # K-fold cross validation
 k = 5 # number of folds
 kf = KFold(n_splits=k)
 ki = 0
-for ind_train, ind_valid in kf.split(x_train):
+for ind_train, ind_valid in kf.split(x_train):    
     ki += 1
 
     # get train and validation sets
     x_train, y_train = X_data[ind_train], Y_data[ind_train]
     x_valid, y_valid = X_data[ind_valid], Y_data[ind_valid]
+    mse_train, mse_valid = it_Num * [0], it_Num * [0]
 
     # Setup plot of the current fold
     fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    line1, = ax1.plot(y_valid, color='b', label='Y Validation')
+    ax1 = fig.add_subplot(121)
+    line1, = ax1.plot(y_valid, color='b', label='Observation')
     line2, = ax1.plot(y_valid * 0.5, color='r', label='Prediction', alpha=0.3)
-    plt.legend()
+    ax1.set_title('Carbon Values for the Validation Set')
+    ax1.legend()
+
+    ax2 = fig.add_subplot(122)
+    line3, = ax2.plot(mse_train, label='Training')
+    line4, = ax2.plot(mse_valid, label='Validation')
+    ax2.set_title('Error vs number of iterations')
+    ax2.set_xlabel('Number of iterations')
+    ax2.set_ylabel('Error')
+    ax2.legend()
+
     plt.show()
 
     # Number of observations in training data
@@ -129,12 +148,8 @@ for ind_train, ind_valid in kf.split(x_train):
     net.run(tf.global_variables_initializer())
     
     # Run
-    epochs = 50
-    batch_size = 100
-    mse_train, mse_valid = [], []
+    j = 0
     for e in range(epochs):
-        print(e)
-
         # Minibatch training
         for i in range(0, len(y_train) // batch_size):
             start = i * batch_size
@@ -145,16 +160,26 @@ for ind_train, ind_valid in kf.split(x_train):
             net.run(opt, feed_dict={X: batch_x, Y: batch_y})
 
             # Show progress
-            if np.mod(i, 50) == 0:
+            if np.mod(i, freq) == 0:
                 # Observation & Prediction plot
                 pred_valid = net.run(out, feed_dict={X: x_valid})
                 line2.set_ydata(pred_valid)
-                plt.title('Epoch ' + str(e) + ', Batch ' + str(i) + ', Fold ' + str(ki))
-                plt.pause(0.01)
+                ax1.set_xlabel('Epoch ' + str(e) + ', Batch ' + str(i) + ', Fold ' + str(ki))
 
-                # Used in Error vs Iteration plot
-                mse_train.append(net.run(loss_reg, feed_dict={X: x_train, Y: y_train}))
-                mse_valid.append(net.run(loss_reg, feed_dict={X: x_valid, Y: y_valid}))
+                # Error vs Iteration plot
+                mse_train[j] = net.run(loss_reg, feed_dict={X: x_train, Y: y_train})
+                line3.set_ydata(mse_train)
+
+                mse_valid[j] = net.run(loss_reg, feed_dict={X: x_valid, Y: y_valid})
+                line4.set_ydata(mse_valid)
+
+                min_y = min(min(mse_train), min(mse_valid))
+                max_y = max(max(mse_train), max(mse_valid))
+                ax2.set_ylim(min_y - (min_y * 0.25), max_y + (max_y * 0.25))
+
+                j += 1
+
+                plt.pause(0.01)
 
     # Evaluate model once per fold
     # Train Set
@@ -175,22 +200,14 @@ for ind_train, ind_valid in kf.split(x_train):
     # close interactive session
     net.close()
 
-    plt.cla()
-    plt.clf()
-
-    # TODO: não consigo fazer plotar, dá erro.
-    """plt.figure()
-    plt.plot(mse_train)
-    plt.title('Error vs number of iterations')
-    plt.xlabel('Number of iterations')
-    plt.ylabel('Error')
-    plt.show()
-    savefig('ErrorVsIteration' + str(ki) + '.png', bbox_inches='tight')
-    plt.cla()
-    plt.clf()"""
+    # Finishing current fold
+    print("Fold ", ki, " done. Continuing in 20s.")
+    time.sleep(20)
     plt.close()
 
 # Print results
+print()
+print("Final Results:")
 print('MSE Train: ', mse_avg_train / k)
 print('MSE Validation: ', mse_avg_valid / k)
 print('MSE Test: ', mse_avg_test / k)
